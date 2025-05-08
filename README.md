@@ -1,5 +1,6 @@
 # User configuration migrator
 
+[![GitHub release](https://img.shields.io/github/v/release/aleivaswe/user_config_migrator.svg)](https://github.com/aleivaswe/user_config_migrator/releases)
 ![Framework](https://img.shields.io/badge/.NET_Framework-4.8-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status: Public](https://img.shields.io/badge/status-public-brightgreen)
@@ -23,6 +24,7 @@ It does **not** support roaming profiles, custom configuration files, or non-sta
 ## 📦 NuGet
 
 [![NuGet](https://img.shields.io/nuget/v/UserConfigMigrator.svg)](https://www.nuget.org/packages/UserConfigMigrator)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/UserConfigMigrator.svg)](https://www.nuget.org/packages/UserConfigMigrator)
 
 Install via NuGet Package Manager:
 ```bash
