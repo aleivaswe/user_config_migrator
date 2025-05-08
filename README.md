@@ -20,6 +20,20 @@ It does **not** support roaming profiles, custom configuration files, or non-sta
 - Exports settings from a `user.config` file.
 - Applies exported settings from a `user.config` file into the current application settings, skipping unknown fields.
 
+## 📦 NuGet
+
+[![NuGet](https://img.shields.io/nuget/v/UserConfigMigrator.svg)](https://www.nuget.org/packages/UserConfigMigrator)
+
+Install via NuGet Package Manager:
+```bash
+Install-Package UserConfigMigrator
+```
+
+Or via .NET CLI:
+```bash
+dotnet add package UserConfigMigrator
+```
+
 ## Usage examples
 
 ### Step-by-step upgrading of user settings
