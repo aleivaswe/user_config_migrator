@@ -150,7 +150,7 @@ namespace UserConfigMigration
             // Root app settings folder: %LOCALAPPDATA%/{ROOT_NAMESPACE}
             string local_app_data = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
-            /**
+            /*
              * App settings sub-folder format (Visual Studio only): 
              * Production: {ASSEMBLY_NAME}.exe_Url_{HASH}
              * Debugging : {ASSEMBLY_NAME}.vshost.exe_Url_{HASH}
@@ -219,7 +219,7 @@ namespace UserConfigMigration
         /// </summary>
         /// <param name="user_config_path">Path to the user configuration file.</param>
         /// <param name="settings_to_export">Collection of settings to export.</param>
-        /// <returns>Dictionary of exported setting <c>(name, value)<\c> key, value pairs.</returns>
+        /// <returns>Dictionary of exported setting <c>(name, value)</c> key, value pairs.</returns>
         /// <remarks>
         /// <b>Note:</b> Only settings available in the export setting collection are exported.
         /// <para>Any additional settings in the user configuration file, that have no match in the export setting collection, are ignored.</para>
