@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package >
+<package>
   <metadata>
     <id>UserConfigMigrator</id>
     <version>1.0.0.0</version>
@@ -9,16 +9,16 @@
     <description>Helper for migrating user-scoped .NET application settings across versions.</description>
     <tags>user.config settings migration dotnet48</tags>
     <projectUrl>https://github.com/aleivaswe/user_config_migrator</projectUrl>
-    <repository type="git" url="https://github.com/aleivaswe/user_config_migrator.git" branch="main"/>
+    <repository type="git" url="https://github.com/aleivaswe/user_config_migrator.git" branch="main" />
     <dependencies>
-      <group targetFramework=".NETFramework4.8"/>
+      <group targetFramework=".NETFramework4.8" />
     </dependencies>
     <license type="file">LICENSE.txt</license>
     <readme>docs\README.md</readme>
   </metadata>
   <files>
-    <file src="bin\Release\UserConfigMigrator.dll" target="lib\net48"/>
-    <file src="..\LICENSE.txt" target=""/>
-    <file src="..\README.md" target="docs\"/>
+    <file src="bin\Release\UserConfigMigrator.dll" target="lib\net48" />
+    <file src="..\LICENSE.txt" target="" />
+    <file src="..\README.md" target="docs\" />
   </files>
 </package>
