@@ -413,5 +413,40 @@ namespace UserConfigMigration
             ApplySettings(exported_settings, target_settings);
             return true;
         }
+
+        /// <summary>
+        /// Find the latest user configuration file stored in local application settings, export and apply settings into the target settings object.
+        /// </summary>
+        /// <param name="target_settings">The target settings object where the imported settings shall be applied.</param>
+        /// <param name="user_level_config"><b>Optional:</b> User level configuration.</param>
+        /// <param name="accept_higher_app_versions"><b>Optional:</b> If true a user configuration file from higher application versions is allowed in the search.
+        /// <para>Useful when downgrading an application and settings from higher application versions shall be included in the search.</para></param>
+        /// <param name="previous_app_infos"><b>Optional:</b> If defined, the search is extended to all application information items provided.
+        /// <para>Useful when application information (root namespace or assembly name) have been renamed and settings from previous versions shall be included in the search.</para></param>
+        /// <returns><c>true</c> if a user configuration file is found, <c>false</c> if no file is found.</returns>
+        public static bool UpgradeSettings(
+            SettingsBase target_settings,
+            ConfigurationUserLevel user_level_config = ConfigurationUserLevel.PerUserRoaming,
+            bool accept_higher_app_versions = false,
+            IReadOnlyCollection<AppInfo> previous_app_infos = null)
+        {
+            Version current_app_version;
+            AppInfo current_app_info = GetAppInfoFromCurrentUserConfig(out current_app_version, user_level_config);
+
+            string user_config_path = null;
+            if (!TryFindLatestUserConfig(
+                current_app_version,
+                current_app_info,
+                out user_config_path,
+                accept_higher_app_versions,
+                previous_app_infos))
+            {
+                return false;
+            }
+
+            IDictionary<string, object> exported_settings = ExportSettings(user_config_path, target_settings);
+            ApplySettings(exported_settings, target_settings);
+            return true;
+        }
     }
 }
