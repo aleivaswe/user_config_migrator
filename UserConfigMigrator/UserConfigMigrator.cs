@@ -72,6 +72,49 @@ namespace UserConfigMigration
         }
 
         /// <summary>
+        /// Get application information based from the current user configuration file.
+        /// </summary>
+        /// <param name="current_app_version">The current application version based from the current user configuration file.</param>
+        /// <param name="user_level_config"><b>Optional:</b> User level configuration.</param>
+        /// <returns>The application information based from the current user configuration file.</returns>
+        public static AppInfo GetAppInfoFromCurrentUserConfig(
+            out Version current_app_version,
+            ConfigurationUserLevel user_level_config = ConfigurationUserLevel.PerUserRoaming)
+        {
+            string user_config_path = ConfigurationManager.OpenExeConfiguration(user_level_config).FilePath;
+            ValidatePath(user_config_path, name: nameof(user_config_path));
+
+            DirectoryInfo version_dir = new DirectoryInfo(Path.GetDirectoryName(user_config_path));
+            if (!Version.TryParse(version_dir.Name, out current_app_version))
+            {
+                throw new InvalidCastException($"'{version_dir}' is not a valid version directory");
+            }
+
+            /*
+             * Assembly sub-folder format (Visual Studio only): 
+             * Production: {ASSEMBLY_NAME}.exe_Url_{HASH}
+             * Debugging : {ASSEMBLY_NAME}.vshost.exe_Url_{HASH}
+             */
+            DirectoryInfo assembly_dir = version_dir.Parent;
+            int last_underscore_index = assembly_dir.Name.LastIndexOf("_Url_", StringComparison.OrdinalIgnoreCase);
+            if (last_underscore_index < 0)
+            {
+                throw new InvalidOperationException($"'{assembly_dir}' is not a valid assembly directory");
+            }
+            string assembly_name = assembly_dir.Name.Substring(0, last_underscore_index);
+            if (!assembly_name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"'{assembly_name}' assembly name does not end with '.exe'");
+            }
+            assembly_name = Path.GetFileNameWithoutExtension(assembly_name);
+
+            DirectoryInfo company_or_root_namespace_dir = assembly_dir.Parent;
+            string company_or_root_namespace = company_or_root_namespace_dir.Name;
+
+            return new AppInfo(company_or_root_namespace, assembly_name);
+        }
+
+        /// <summary>
         /// Find the latest user configuration file stored in local application settings.
         /// </summary>
         /// <param name="current_app_version">The current application version.</param>
