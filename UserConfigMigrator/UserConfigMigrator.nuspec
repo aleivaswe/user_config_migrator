@@ -13,6 +13,9 @@
     <dependencies>
       <group targetFramework=".NETFramework4.8" />
     </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Configuration" targetFramework=".NETFramework4.8" />
+    </frameworkAssemblies>
     <license type="file">LICENSE.txt</license>
     <readme>docs\README.md</readme>
   </metadata>
