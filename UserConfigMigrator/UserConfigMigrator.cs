@@ -44,6 +44,33 @@ namespace UserConfigMigration
         }
 
         /// <summary>
+        /// Filename class.
+        /// </summary>
+        public sealed class Filename
+        {
+            /// <summary>
+            /// The filename string value.
+            /// </summary>
+            public string Value { get; } = null;
+
+            /// <summary>
+            /// Create a new filename instance.
+            /// </summary>
+            /// <param name="value">The filename string value.</param>
+            public Filename(string value)
+            {
+                ValidateFilename(value, nameof(value));
+                Value = value;
+            }
+
+            /// <summary>
+            /// Get the filename string value.
+            /// </summary>
+            /// <returns></returns>
+            public override string ToString() { return Value; }
+        }
+
+        /// <summary>
         /// Application information data class.
         /// </summary>
         public class AppInfo
@@ -52,6 +79,11 @@ namespace UserConfigMigration
             /// The root namespace (defined as 'Default namescape' in project application settings).
             /// </summary>
             public string RootNamespace { get; } = null;
+
+            /// <summary>
+            /// The company (defined as 'Company' in project assembly information).
+            /// </summary>
+            public string Company { get; } = null;
 
             /// <summary>
             /// The assembly name (defined as 'Assembly name' in project application settings).
@@ -69,6 +101,25 @@ namespace UserConfigMigration
                 ValidateFilename(assembly_name, nameof(assembly_name));
                 RootNamespace = root_namespace;
                 AssemblyName = assembly_name;
+            }
+
+            /// <summary>
+            /// Create a new application information instance.
+            /// </summary>
+            /// <param name="company">The application company.</param>
+            /// <param name="assembly_name">The application assembly name.</param>
+            public AppInfo(Filename company, Filename assembly_name)
+            {
+                if (company == null)
+                {
+                    throw new ArgumentNullException(nameof(company));
+                }
+                if (assembly_name == null)
+                {
+                    throw new ArgumentNullException(nameof(assembly_name));
+                }
+                Company = company.Value;
+                AssemblyName = assembly_name.Value;
             }
         }
 
