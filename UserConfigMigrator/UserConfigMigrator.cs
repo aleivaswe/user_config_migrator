@@ -215,7 +215,21 @@ namespace UserConfigMigration
             string latest_user_config_path = null;
             foreach (AppInfo app_info in app_infos)
             {
-                string root_settings_path = Path.Combine(local_app_data, app_info.RootNamespace);
+                string root_settings_path = null;
+                if (app_info.Company != null)
+                {
+                    root_settings_path = Path.Combine(local_app_data, app_info.Company);
+                }
+                else if (app_info.RootNamespace != null)
+                {
+                    root_settings_path = Path.Combine(local_app_data, app_info.RootNamespace);
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"Either '{nameof(app_info.Company)}' or '{nameof(app_info.RootNamespace)}' must be defined in '{nameof(AppInfo)}'");
+                }
+
                 if (!Directory.Exists(root_settings_path))
                 {
                     continue;
