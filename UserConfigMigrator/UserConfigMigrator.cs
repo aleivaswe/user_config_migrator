@@ -14,27 +14,27 @@ namespace UserConfigMigration
     {
         private const string USER_CONFIG_FILENAME = "user.config";
 
-        private static void ValidateFilename(string filename, string name)
+        private static void ValidateFilename(string filename, string param_name)
         {
             if (string.IsNullOrWhiteSpace(filename))
             {
-                throw new ArgumentNullException($"'{name}' must be defined");
+                throw new ArgumentNullException(param_name);
             }
             if (filename.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
             {
-                throw new ArgumentException($"'{name}' value contains invalid filename characters: {filename}");
+                throw new ArgumentException($"'{param_name}' value contains invalid filename characters: {filename}");
             }
         }
 
-        private static void ValidatePath(string path, string name)
+        private static void ValidatePath(string path, string param_name)
         {
             if (string.IsNullOrWhiteSpace(path))
             {
-                throw new ArgumentNullException($"'{name}' must be defined");
+                throw new ArgumentNullException(param_name);
             }
             if (path.IndexOfAny(Path.GetInvalidPathChars()) >= 0)
             {
-                throw new ArgumentException($"'{name}' value contains invalid path characters: {path}");
+                throw new ArgumentException($"'{param_name}' value contains invalid path characters: {path}");
             }
         }
 
@@ -134,7 +134,7 @@ namespace UserConfigMigration
             ConfigurationUserLevel user_level_config = ConfigurationUserLevel.PerUserRoaming)
         {
             string user_config_path = ConfigurationManager.OpenExeConfiguration(user_level_config).FilePath;
-            ValidatePath(user_config_path, name: nameof(user_config_path));
+            ValidatePath(user_config_path, param_name: nameof(user_config_path));
 
             DirectoryInfo version_dir = new DirectoryInfo(Path.GetDirectoryName(user_config_path));
             if (!Version.TryParse(version_dir.Name, out current_app_version))
@@ -186,11 +186,11 @@ namespace UserConfigMigration
         {
             if (current_app_version == null)
             {
-                throw new ArgumentNullException($"'{nameof(current_app_version)}' must be defined");
+                throw new ArgumentNullException(nameof(current_app_version));
             }
             if (current_app_info == null)
             {
-                throw new ArgumentNullException($"'{nameof(current_app_info)}' must be defined");
+                throw new ArgumentNullException(nameof(current_app_info));
             }
 
             List<AppInfo> app_infos = new List<AppInfo>() { current_app_info };
@@ -305,7 +305,7 @@ namespace UserConfigMigration
             }
             if (settings_to_export == null)
             {
-                throw new ArgumentNullException($"'{nameof(settings_to_export)}' must be defined");
+                throw new ArgumentNullException(nameof(settings_to_export));
             }
 
             XmlDocument xml_doc = new XmlDocument();
@@ -372,11 +372,11 @@ namespace UserConfigMigration
         {
             if (imported_settings == null)
             {
-                throw new ArgumentNullException($"'{nameof(imported_settings)}' must be defined");
+                throw new ArgumentNullException(nameof(imported_settings));
             }
             if (target_settings == null)
             {
-                throw new ArgumentNullException($"'{nameof(target_settings)}' must be defined");
+                throw new ArgumentNullException(nameof(target_settings));
             }
 
             foreach (KeyValuePair<string, object> kvp in imported_settings)
