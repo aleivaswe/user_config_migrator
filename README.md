@@ -38,17 +38,38 @@ dotnet add package UserConfigMigrator
 
 ## Usage examples
 
+### Direct upgrading of user settings
+```csharp
+UserConfigMigrator.UpgradeSettings(Properties.Settings.Default);
+```
+
+### Direct upgrading of user settings with support for previous app versions
+```csharp
+string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+string oldCompanyName = "oldCompanyName";
+
+IReadOnlyCollection<UserConfigMigrator.AppInfo> previousAppInfos =
+    new ReadOnlyCollection<UserConfigMigrator.AppInfo>(
+        new List<UserConfigMigrator.AppInfo>()
+        {
+            new UserConfigMigrator.AppInfo(
+                company: new UserConfigMigrator.Filename(oldCompanyName),
+                assembly_name: new UserConfigMigrator.Filename(assemblyName))
+        });
+
+UserConfigMigrator.UpgradeSettings(Properties.Settings.Default, previous_app_infos: previousAppInfos);
+```
+
 ### Step-by-step upgrading of user settings
 ```csharp
-Version appVersion = Assembly.GetExecutingAssembly().GetName().Version;
-string rootNamespace = "MyAppRootNamespace";
-string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
+ConfigurationUserLevel userLevelConf = ConfigurationUserLevel.PerUserRoaming;
+
+Version appVersion;
+UserConfigMigrator.AppInfo appInfo =
+    UserConfigMigrator.GetAppInfoFromCurrentUserConfig(out appVersion, userLevelConf);
 
 string userConfigPath;
-if (UserConfigMigrator.TryFindLatestUserConfig(
-        appVersion,
-        new UserConfigMigrator.AppInfo(rootNamespace, assemblyName),
-        out userConfigPath))
+if (UserConfigMigrator.TryFindLatestUserConfig(appVersion, appInfo, out userConfigPath))
 {
     IDictionary<string, object> exportedSettings =
         UserConfigMigrator.ExportSettings(userConfigPath, Properties.Settings.Default);
@@ -56,23 +77,3 @@ if (UserConfigMigrator.TryFindLatestUserConfig(
     UserConfigMigrator.ApplySettings(exportedSettings, Properties.Settings.Default);
 }
 ```
-
-### Direct upgrading of user settings
-```csharp
-Version appVersion = Assembly.GetExecutingAssembly().GetName().Version;
-string rootNamespace = "MyAppRootNamespace";
-string assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
-
-UserConfigMigrator.UpgradeSettings(
-    appVersion,
-    new UserConfigMigrator.AppInfo(rootNamespace, assemblyName),
-    Properties.Settings.Default);
-```
-
-> 💡 **Tip:** Unsure of your root namespace?  
-> Define a dummy class (e.g. `Root`) in the project root and use:
-
-```csharp
-string rootNamespace = typeof(Root).Namespace;
-```
-> This helps ensure you reference the actual root namespace from project settings, which may differ from folder names.
