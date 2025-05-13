@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Xml;
 
 namespace UserConfigMigration
@@ -144,7 +145,7 @@ namespace UserConfigMigration
             List<AppInfo> app_infos = new List<AppInfo>() { current_app_info };
             if (previous_app_infos != null)
             {
-                app_infos.AddRange(previous_app_infos);
+                app_infos.AddRange(previous_app_infos.Where(x => x != null));
             }
 
             // Root app settings folder: %LOCALAPPDATA%/{ROOT_NAMESPACE}
