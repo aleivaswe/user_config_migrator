@@ -38,6 +38,47 @@ namespace UserConfigMigration
             }
         }
 
+        private static FileInfo GetCurrentUserConfigPath(ConfigurationUserLevel user_level_config)
+        {
+            string user_config_path = ConfigurationManager.OpenExeConfiguration(user_level_config).FilePath;
+            ValidatePath(user_config_path, param_name: nameof(user_config_path));
+            return new FileInfo(user_config_path);
+        }
+
+        private static DirectoryInfo GetUserConfigVersionDir(FileInfo user_config_file)
+        {
+            return user_config_file.Directory;
+        }
+
+        private static Version GetUserConfigVersion(FileInfo user_config_file)
+        {
+            DirectoryInfo version_dir = GetUserConfigVersionDir(user_config_file);
+            Version version;
+            if (!Version.TryParse(version_dir.Name, out version))
+            {
+                throw new InvalidCastException($"'{version_dir}' is not a valid version directory");
+            }
+            return version;
+        }
+
+        private static DirectoryInfo GetUserConfigAssemblyDir(FileInfo user_config_file)
+        {
+            DirectoryInfo version_dir = GetUserConfigVersionDir(user_config_file);
+            return version_dir.Parent;
+        }
+
+        private static DirectoryInfo GetUserConfigRootSettingsDir(FileInfo user_config_file)
+        {
+            DirectoryInfo assembly_dir = GetUserConfigAssemblyDir(user_config_file);
+            return assembly_dir.Parent;
+        }
+
+        private static DirectoryInfo GetUserConfigAppDataDir(FileInfo user_config_file)
+        {
+            DirectoryInfo root_settings_dir = GetUserConfigRootSettingsDir(user_config_file);
+            return root_settings_dir.Parent;
+        }
+
         private static void DebugLog(string line)
         {
             System.Diagnostics.Debug.WriteLine(line);
