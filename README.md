@@ -4,6 +4,7 @@
 ![Framework](https://img.shields.io/badge/.NET_Framework-4.8-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status: Public](https://img.shields.io/badge/status-public-brightgreen)
+[![Source Link](https://img.shields.io/badge/Source%20Link-enabled-brightgreen)](https://github.com/dotnet/sourcelink)
 
 A helper utility for migrating user-scoped application settings between different versions of a .NET application.
 
