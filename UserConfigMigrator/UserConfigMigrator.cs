@@ -134,6 +134,69 @@ namespace UserConfigMigration
                 $"Either '{nameof(app_info.Company)}' or '{nameof(app_info.RootNamespace)}' must be defined in '{nameof(AppInfo)}'");
         }
 
+        private static string FindLatestUserConfigFile(
+            string app_data_dir,
+            List<AppInfo> app_infos,
+            Version current_app_version,
+            bool accept_higher_app_versions)
+        {
+            Version latest_version = null;
+            string latest_user_config_path = null;
+            foreach (AppInfo app_info in app_infos)
+            {
+                string root_settings_path = Path.Combine(app_data_dir, app_info.RootSettingsDirName);
+                if (!Directory.Exists(root_settings_path))
+                {
+                    continue;
+                }
+
+                string assembly_name = app_info.AssemblyName;
+                if (!string.IsNullOrWhiteSpace(app_info.AssemblyDirName))
+                {
+                    assembly_name = app_info.AssemblyDirName;
+                }
+
+                foreach (string sub_folder in Directory.GetDirectories(root_settings_path))
+                {
+                    string folder_name = Path.GetFileName(sub_folder);
+                    if (!folder_name.StartsWith(assembly_name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    foreach (string version_folder in Directory.GetDirectories(sub_folder))
+                    {
+                        string user_config_file = Path.Combine(version_folder, USER_CONFIG_FILENAME);
+                        if (!File.Exists(user_config_file))
+                        {
+                            continue;
+                        }
+
+                        string version_raw = Path.GetFileName(version_folder);
+                        Version version;
+                        if (!Version.TryParse(version_raw, out version))
+                        {
+                            continue;
+                        }
+                        if (version == current_app_version)
+                        {
+                            continue;
+                        }
+                        if (!accept_higher_app_versions && (version > current_app_version))
+                        {
+                            continue;
+                        }
+                        if ((latest_version == null) || (version > latest_version))
+                        {
+                            latest_version = version;
+                            latest_user_config_path = user_config_file;
+                        }
+                    }
+                }
+            }
+            return latest_user_config_path;
+        }
+
         private static void DebugLog(string line)
         {
             System.Diagnostics.Debug.WriteLine(line);
