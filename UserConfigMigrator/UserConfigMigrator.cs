@@ -79,6 +79,61 @@ namespace UserConfigMigration
             return root_settings_dir.Parent;
         }
 
+        private static string GetAssemblyName(string assembly_dir_name)
+        {
+            // Indicator of assembly directory name is ".exe_Url_" in the middle of the assembly name.
+            const string indicator = ".exe_Url_";
+            int indicator_start_index = assembly_dir_name.LastIndexOf(indicator, StringComparison.OrdinalIgnoreCase);
+            if (indicator_start_index < 0)
+            {
+                return assembly_dir_name;
+            }
+            if (indicator_start_index == 0)
+            {
+                throw new InvalidOperationException(
+                    $"'{assembly_dir_name}' assembly name must be at least one character long");
+            }
+            else if ((indicator_start_index + indicator.Length) >= assembly_dir_name.Length)
+            {
+                throw new InvalidOperationException(
+                    $"'{assembly_dir_name}' assembly hash must be at least one character long");
+            }
+            string assembly_name = assembly_dir_name.Substring(0, indicator_start_index);
+            return Path.GetFileNameWithoutExtension(assembly_name);
+        }
+
+        private static bool IsAssemblyDirName(string assembly_dir_name)
+        {
+            return GetAssemblyName(assembly_dir_name).Length != assembly_dir_name.Length;
+        }
+
+        private static AppInfo ConvertToAssemblyNameWithExtension(AppInfo app_info, bool debugging)
+        {
+            if (app_info == null)
+            {
+                return null;
+            }
+            if (IsAssemblyDirName(app_info.AssemblyName))
+            {
+                return app_info;
+            }
+
+            string assembly_name = Path.GetFileNameWithoutExtension(app_info.AssemblyName);
+            string extension = debugging ? ".vshost.exe" : ".exe";
+            Filename assembly_name_with_extension = new Filename(assembly_name + extension);
+
+            if (app_info.Company != null)
+            {
+                return new AppInfo(new Filename(app_info.Company), assembly_name_with_extension);
+            }
+            else if (app_info.RootNamespace != null)
+            {
+                return new AppInfo(app_info.RootNamespace, assembly_name_with_extension.Value);
+            }
+            throw new InvalidOperationException(
+                $"Either '{nameof(app_info.Company)}' or '{nameof(app_info.RootNamespace)}' must be defined in '{nameof(AppInfo)}'");
+        }
+
         private static void DebugLog(string line)
         {
             System.Diagnostics.Debug.WriteLine(line);
