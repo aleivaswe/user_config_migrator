@@ -13,6 +13,11 @@
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <Authors>Aleksander Ivanovski</Authors>
     <PackageId>UserConfigMigrator</PackageId>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageProjectUrl>https://github.com/aleivaswe/user_config_migrator</PackageProjectUrl>
     <PackageTags>user.config settings migration dotnet48</PackageTags>
   </PropertyGroup>
