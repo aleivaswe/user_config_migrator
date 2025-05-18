@@ -187,6 +187,31 @@ namespace UserConfigMigration
             public string AssemblyName { get; } = null;
 
             /// <summary>
+            /// The assembly directory name (obtained from the current user configuration file).
+            /// </summary>
+            internal string AssemblyDirName { get; } = null;
+
+            /// <summary>
+            /// The root settings directory name (either <see cref="Company"/> or <see cref="RootNamespace"/>).
+            /// </summary>
+            internal string RootSettingsDirName
+            {
+                get
+                {
+                    if (Company != null)
+                    {
+                        return Company;
+                    }
+                    else if (RootNamespace != null)
+                    {
+                        return RootNamespace;
+                    }
+                    throw new InvalidOperationException(
+                        $"Either '{nameof(Company)}' or '{nameof(RootNamespace)}' must be defined");
+                }
+            }
+
+            /// <summary>
             /// Create a new application information instance.
             /// </summary>
             /// <param name="root_namespace">The application root namespace.</param>
@@ -216,6 +241,32 @@ namespace UserConfigMigration
                 }
                 Company = company.Value;
                 AssemblyName = assembly_name.Value;
+            }
+
+            /// <summary>
+            /// Create a new application information instance.
+            /// </summary>
+            /// <param name="company">The application company.</param>
+            /// <param name="assembly_name">The application assembly name.</param>
+            /// <param name="assembly_dir_name">The application assembly directory name.</param>
+            /// <exception cref="ArgumentNullException"></exception>
+            internal AppInfo(Filename company, Filename assembly_name, Filename assembly_dir_name)
+            {
+                if (company == null)
+                {
+                    throw new ArgumentNullException(nameof(company));
+                }
+                if (assembly_name == null)
+                {
+                    throw new ArgumentNullException(nameof(assembly_name));
+                }
+                if (assembly_dir_name == null)
+                {
+                    throw new ArgumentNullException(nameof(assembly_dir_name));
+                }
+                Company = company.Value;
+                AssemblyName = assembly_name.Value;
+                AssemblyDirName = assembly_dir_name.Value;
             }
         }
 
