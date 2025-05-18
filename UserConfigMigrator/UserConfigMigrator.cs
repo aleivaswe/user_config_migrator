@@ -592,6 +592,7 @@ namespace UserConfigMigration
         /// <para>Useful when downgrading an application and settings from higher application versions shall be included in the search.</para></param>
         /// <param name="previous_app_infos"><b>Optional:</b> If defined, the search is extended to all application information items provided.
         /// <para>Useful when application information (root namespace or assembly name) have been renamed and settings from previous versions shall be included in the search.</para></param>
+        /// <param name="user_level_config"><b>Optional:</b> User level configuration.</param>
         /// <returns><c>true</c> if a user configuration file is found, <c>false</c> if no file is found.</returns>
         public static bool UpgradeSettings(
             Version current_app_version,
@@ -599,7 +600,8 @@ namespace UserConfigMigration
             out string user_config_path,
             SettingsBase target_settings,
             bool accept_higher_app_versions = false,
-            IReadOnlyCollection<AppInfo> previous_app_infos = null)
+            IReadOnlyCollection<AppInfo> previous_app_infos = null,
+            ConfigurationUserLevel user_level_config = ConfigurationUserLevel.PerUserRoamingAndLocal)
         {
             user_config_path = null;
             if (!TryFindLatestUserConfig(
@@ -607,7 +609,8 @@ namespace UserConfigMigration
                 current_app_info,
                 out user_config_path,
                 accept_higher_app_versions,
-                previous_app_infos))
+                previous_app_infos,
+                user_level_config))
             {
                 return false;
             }
@@ -627,13 +630,15 @@ namespace UserConfigMigration
         /// <para>Useful when downgrading an application and settings from higher application versions shall be included in the search.</para></param>
         /// <param name="previous_app_infos"><b>Optional:</b> If defined, the search is extended to all application information items provided.
         /// <para>Useful when application information (root namespace or assembly name) have been renamed and settings from previous versions shall be included in the search.</para></param>
+        /// <param name="user_level_config"><b>Optional:</b> User level configuration.</param>
         /// <returns><c>true</c> if a user configuration file is found, <c>false</c> if no file is found.</returns>
         public static bool UpgradeSettings(
             Version current_app_version,
             AppInfo current_app_info,
             SettingsBase target_settings,
             bool accept_higher_app_versions = false,
-            IReadOnlyCollection<AppInfo> previous_app_infos = null)
+            IReadOnlyCollection<AppInfo> previous_app_infos = null,
+            ConfigurationUserLevel user_level_config = ConfigurationUserLevel.PerUserRoamingAndLocal)
         {
             string user_config_path = null;
             if (!TryFindLatestUserConfig(
@@ -641,7 +646,8 @@ namespace UserConfigMigration
                 current_app_info,
                 out user_config_path,
                 accept_higher_app_versions,
-                previous_app_infos))
+                previous_app_infos,
+                user_level_config))
             {
                 return false;
             }
@@ -663,12 +669,14 @@ namespace UserConfigMigration
         /// <returns><c>true</c> if a user configuration file is found, <c>false</c> if no file is found.</returns>
         public static bool UpgradeSettings(
             SettingsBase target_settings,
-            ConfigurationUserLevel user_level_config = ConfigurationUserLevel.PerUserRoaming,
+            ConfigurationUserLevel user_level_config = ConfigurationUserLevel.PerUserRoamingAndLocal,
             bool accept_higher_app_versions = false,
             IReadOnlyCollection<AppInfo> previous_app_infos = null)
         {
             Version current_app_version;
-            AppInfo current_app_info = GetAppInfoFromCurrentUserConfig(out current_app_version, user_level_config);
+            AppInfo current_app_info = GetAppInfoFromCurrentUserConfig(
+                out current_app_version,
+                user_level_config);
 
             string user_config_path = null;
             if (!TryFindLatestUserConfig(
@@ -676,7 +684,8 @@ namespace UserConfigMigration
                 current_app_info,
                 out user_config_path,
                 accept_higher_app_versions,
-                previous_app_infos))
+                previous_app_infos,
+                user_level_config))
             {
                 return false;
             }
