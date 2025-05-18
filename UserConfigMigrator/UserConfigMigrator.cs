@@ -365,13 +365,15 @@ namespace UserConfigMigration
         /// <para>Useful when downgrading an application and settings from higher application versions shall be included in the search.</para></param>
         /// <param name="previous_app_infos"><b>Optional:</b> If defined, the search is extended to all application information items provided.
         /// <para>Useful when application information (root namespace or assembly name) have been renamed and settings from previous versions shall be included in the search.</para></param>
+        /// <param name="user_level_config"><b>Optional:</b> User level configuration.</param>
         /// <returns><c>true</c> if a user configuration file is found, <c>false</c> if no file is found.</returns>
         public static bool TryFindLatestUserConfig(
             Version current_app_version,
             AppInfo current_app_info,
             out string user_config_path,
             bool accept_higher_app_versions = false,
-            IReadOnlyCollection<AppInfo> previous_app_infos = null)
+            IReadOnlyCollection<AppInfo> previous_app_infos = null,
+            ConfigurationUserLevel user_level_config = ConfigurationUserLevel.PerUserRoamingAndLocal)
         {
             if (current_app_version == null)
             {
@@ -382,90 +384,70 @@ namespace UserConfigMigration
                 throw new ArgumentNullException(nameof(current_app_info));
             }
 
-            List<AppInfo> app_infos = new List<AppInfo>() { current_app_info };
-            if (previous_app_infos != null)
-            {
-                app_infos.AddRange(previous_app_infos.Where(x => x != null));
-            }
-
-            // Root app settings folder: %LOCALAPPDATA%/{ROOT_NAMESPACE}
-            string local_app_data = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            FileInfo current_user_config_file = GetCurrentUserConfigPath(user_level_config);
+            string app_data_dir = GetUserConfigAppDataDir(current_user_config_file).FullName;
 
             /*
-             * App settings sub-folder format (Visual Studio only): 
-             * Production: {ASSEMBLY_NAME}.exe_Url_{HASH}
-             * Debugging : {ASSEMBLY_NAME}.vshost.exe_Url_{HASH}
+             * Priority order for user configuration file search:
+             * 1. Current app info, if assembly directory name is defined
+             * 2. If debugging and no assembly directory name, current app info with debug assembly name extension
+             * 3. If debugging, previous app infos with debug assembly name extension
+             * 4. If no assembly directory name, current app info with .exe assembly name extension
+             * 5. Previous app infos with .exe assembly name extension
              */
-            bool is_debugging = System.Diagnostics.Debugger.IsAttached;
-            string exe_prefix = is_debugging ? ".vshost.exe" : ".exe";
+            bool assembly_dir_is_defined = !string.IsNullOrWhiteSpace(current_app_info.AssemblyDirName);
+            bool debugging = System.Diagnostics.Debugger.IsAttached;
 
-            // Find latest version and the path to the user config file
-            Version latest_version = null;
-            string latest_user_config_path = null;
-            foreach (AppInfo app_info in app_infos)
+            user_config_path = null;
+            if (assembly_dir_is_defined)
             {
-                string root_settings_path = null;
-                if (app_info.Company != null)
+                user_config_path = FindLatestUserConfigFile(
+                    app_data_dir,
+                    new List<AppInfo>() { current_app_info },
+                    current_app_version,
+                    accept_higher_app_versions);
+            }
+            if (debugging)
+            {
+                if ((user_config_path == null) && !assembly_dir_is_defined)
                 {
-                    root_settings_path = Path.Combine(local_app_data, app_info.Company);
+                    user_config_path = FindLatestUserConfigFile(
+                        app_data_dir,
+                        new List<AppInfo>() { ConvertToAssemblyNameWithExtension(current_app_info, debugging: true) },
+                        current_app_version,
+                        accept_higher_app_versions);
                 }
-                else if (app_info.RootNamespace != null)
+                if ((user_config_path == null) && (previous_app_infos != null))
                 {
-                    root_settings_path = Path.Combine(local_app_data, app_info.RootNamespace);
-                }
-                else
-                {
-                    throw new InvalidOperationException(
-                        $"Either '{nameof(app_info.Company)}' or '{nameof(app_info.RootNamespace)}' must be defined in '{nameof(AppInfo)}'");
-                }
-
-                if (!Directory.Exists(root_settings_path))
-                {
-                    continue;
-                }
-
-                string sub_folder_prefix = $"{app_info.AssemblyName}{exe_prefix}_Url_";
-
-                foreach (string sub_folder in Directory.GetDirectories(root_settings_path))
-                {
-                    string folder_name = Path.GetFileName(sub_folder);
-                    if (!folder_name.StartsWith(sub_folder_prefix, StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
-
-                    foreach (string version_folder in Directory.GetDirectories(sub_folder))
-                    {
-                        string user_config_file = Path.Combine(version_folder, USER_CONFIG_FILENAME);
-                        if (!File.Exists(user_config_file))
-                        {
-                            continue;
-                        }
-
-                        string version_raw = Path.GetFileName(version_folder);
-                        Version version;
-                        if (!Version.TryParse(version_raw, out version))
-                        {
-                            continue;
-                        }
-                        if (version == current_app_version)
-                        {
-                            continue;
-                        }
-                        if (!accept_higher_app_versions && (version > current_app_version))
-                        {
-                            continue;
-                        }
-                        if ((latest_version == null) || (version > latest_version))
-                        {
-                            latest_version = version;
-                            latest_user_config_path = user_config_file;
-                        }
-                    }
+                    user_config_path = FindLatestUserConfigFile(
+                        app_data_dir,
+                        previous_app_infos
+                            .Where(x => x != null)
+                            .Select(x => ConvertToAssemblyNameWithExtension(x, debugging: true))
+                            .ToList(),
+                        current_app_version,
+                        accept_higher_app_versions);
                 }
             }
-
-            user_config_path = latest_user_config_path;
+            if ((user_config_path == null) && !assembly_dir_is_defined)
+            {
+                user_config_path = FindLatestUserConfigFile(
+                    app_data_dir,
+                    new List<AppInfo>() { ConvertToAssemblyNameWithExtension(current_app_info, debugging: false) },
+                    current_app_version,
+                    accept_higher_app_versions);    
+            }
+            if ((user_config_path == null) && (previous_app_infos != null))
+            {
+                user_config_path = FindLatestUserConfigFile(
+                    app_data_dir,
+                    previous_app_infos
+                        .Where(x => x != null)
+                        .Select(x => ConvertToAssemblyNameWithExtension(x, debugging: false))
+                        .ToList(),
+                    current_app_version,
+                    accept_higher_app_versions);
+            }
             return (user_config_path != null);
         }
 
