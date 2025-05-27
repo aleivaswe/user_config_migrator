@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>UserConfigMigration</RootNamespace>
-    <TargetFramework>net48</TargetFramework>
+	<TargetFrameworks>net8.0;net6.0;netstandard2.0;net48</TargetFrameworks>
     <AssemblyTitle>User Config Migrator</AssemblyTitle>
     <Company>User Config Migrator</Company>
     <Product>UserConfigMigrator</Product>
@@ -25,6 +25,8 @@
     <PackageTags>user.config settings migration dotnet48</PackageTags>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\UserConfigMigrator.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>portable</DebugType>
@@ -32,18 +34,17 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>portable</DebugType>
   </PropertyGroup>
-  <PropertyGroup>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <DocumentationFile>bin\$(Configuration)\UserConfigMigrator.xml</DocumentationFile>
-  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Net.Http" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" Version="8.0.0" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <Reference Include="System.Configuration" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'($TargetFramework)' != 'net48' And '$(TargetFramework)' != 'net6.0'">
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.5" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\LICENSE.txt" Pack="true" PackagePath="" />
