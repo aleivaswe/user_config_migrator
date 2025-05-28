@@ -41,7 +41,7 @@
     <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.1" />
   </ItemGroup>
   <ItemGroup Condition="'($TargetFramework)' != 'net48' And '$(TargetFramework)' != 'net6.0'">
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.5" />
