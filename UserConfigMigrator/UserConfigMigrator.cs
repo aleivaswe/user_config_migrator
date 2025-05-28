@@ -601,7 +601,6 @@ namespace UserConfigMigration
             IReadOnlyCollection<AppInfo> previous_app_infos = null,
             ConfigurationUserLevel user_level_config = ConfigurationUserLevel.PerUserRoamingAndLocal)
         {
-            user_config_path = null;
             if (!TryFindLatestUserConfig(
                 current_app_version,
                 current_app_info,
