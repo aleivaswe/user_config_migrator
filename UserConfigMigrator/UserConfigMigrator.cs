@@ -53,8 +53,7 @@ namespace UserConfigMigration
         private static Version GetUserConfigVersion(FileInfo user_config_file)
         {
             DirectoryInfo version_dir = GetUserConfigVersionDir(user_config_file);
-            Version version;
-            if (!Version.TryParse(version_dir.Name, out version))
+            if (!Version.TryParse(version_dir.Name, out Version version))
             {
                 throw new InvalidCastException($"'{version_dir}' is not a valid version directory");
             }
@@ -173,8 +172,7 @@ namespace UserConfigMigration
                         }
 
                         string version_raw = Path.GetFileName(version_folder);
-                        Version version;
-                        if (!Version.TryParse(version_raw, out version))
+                        if (!Version.TryParse(version_raw, out Version version))
                         {
                             continue;
                         }
@@ -640,11 +638,10 @@ namespace UserConfigMigration
             IReadOnlyCollection<AppInfo> previous_app_infos = null,
             ConfigurationUserLevel user_level_config = ConfigurationUserLevel.PerUserRoamingAndLocal)
         {
-            string user_config_path = null;
             if (!TryFindLatestUserConfig(
                 current_app_version,
                 current_app_info,
-                out user_config_path,
+                out string user_config_path,
                 accept_higher_app_versions,
                 previous_app_infos,
                 user_level_config))
@@ -673,16 +670,14 @@ namespace UserConfigMigration
             bool accept_higher_app_versions = false,
             IReadOnlyCollection<AppInfo> previous_app_infos = null)
         {
-            Version current_app_version;
             AppInfo current_app_info = GetAppInfoFromCurrentUserConfig(
-                out current_app_version,
+                out Version current_app_version,
                 user_level_config);
 
-            string user_config_path = null;
             if (!TryFindLatestUserConfig(
                 current_app_version,
                 current_app_info,
-                out user_config_path,
+                out string user_config_path,
                 accept_higher_app_versions,
                 previous_app_infos,
                 user_level_config))
