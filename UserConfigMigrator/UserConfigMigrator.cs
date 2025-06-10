@@ -127,13 +127,13 @@ namespace UserConfigMigration
                 $"Either '{nameof(app_info.Company)}' or '{nameof(app_info.RootNamespace)}' must be defined in '{nameof(AppInfo)}'");
         }
 
-        private static string FindLatestUserConfigFile(
+        private static UserConfigInfo FindLatestUserConfigFile(
             string app_data_dir,
             List<AppInfo> app_infos,
             Version current_app_version,
             bool accept_higher_app_versions)
         {
-            Version latest_version = null;
+            Version latest_user_config_version = null;
             string latest_user_config_path = null;
             foreach (AppInfo app_info in app_infos)
             {
@@ -178,15 +178,19 @@ namespace UserConfigMigration
                         {
                             continue;
                         }
-                        if ((latest_version == null) || (version > latest_version))
+                        if ((latest_user_config_version == null) || (version > latest_user_config_version))
                         {
-                            latest_version = version;
+                            latest_user_config_version = version;
                             latest_user_config_path = user_config_file;
                         }
                     }
                 }
             }
-            return latest_user_config_path;
+            if (latest_user_config_path == null)
+            {
+                return null;
+            }
+            return new UserConfigInfo(latest_user_config_path, latest_user_config_version);
         }
 
         private static void DebugLog(string line)
