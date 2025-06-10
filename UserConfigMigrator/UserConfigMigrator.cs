@@ -14,6 +14,10 @@ namespace UserConfigMigration
     {
         private const string USER_CONFIG_FILENAME = "user.config";
 
+        private const string ASSEMBLY_NAME_EMPTY_EXTENSION = "";
+        private const string ASSEMBLY_NAME_LEGACY_DEBUG_EXE_EXTENSION = ".vshost.exe";
+        private const string ASSEMBLY_NAME_LEGACY_DEBUG_DLL_EXTENSION = ".vshost.dll";
+
         private static void ValidateFilename(string filename, string param_name)
         {
             if (string.IsNullOrWhiteSpace(filename))
@@ -83,10 +87,6 @@ namespace UserConfigMigration
             // Indicator of assembly directory name is "_Url_" in the middle of the assembly name.
             const string indicator = "_Url_";
             int indicator_start_index = assembly_dir_name.LastIndexOf(indicator, StringComparison.OrdinalIgnoreCase);
-            if (indicator_start_index < 0)
-            {
-                return assembly_dir_name;
-            }
             if (indicator_start_index == 0)
             {
                 throw new InvalidOperationException(
@@ -97,28 +97,22 @@ namespace UserConfigMigration
                 throw new InvalidOperationException(
                     $"'{assembly_dir_name}' assembly hash must be at least one character long");
             }
-            string assembly_name = assembly_dir_name.Substring(0, indicator_start_index);
+
+            string assembly_name = (indicator_start_index < 0)
+                ? assembly_dir_name
+                : assembly_dir_name.Substring(0, indicator_start_index);
+
             return Path.GetFileNameWithoutExtension(assembly_name);
         }
 
-        private static bool IsAssemblyDirName(string assembly_dir_name)
-        {
-            return GetAssemblyName(assembly_dir_name).Length != assembly_dir_name.Length;
-        }
-
-        private static AppInfo ConvertToAssemblyNameWithExtension(AppInfo app_info, bool debugging)
+        private static AppInfo ConvertToAssemblyNameWithExtension(AppInfo app_info, string extension)
         {
             if (app_info == null)
             {
                 return null;
             }
-            if (IsAssemblyDirName(app_info.AssemblyName))
-            {
-                return app_info;
-            }
 
-            string assembly_name = Path.GetFileNameWithoutExtension(app_info.AssemblyName);
-            string extension = debugging ? ".vshost.exe" : ".exe";
+            string assembly_name = GetAssemblyName(app_info.AssemblyName);
             Filename assembly_name_with_extension = new Filename(assembly_name + extension);
 
             if (app_info.Company != null)
