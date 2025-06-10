@@ -348,6 +348,45 @@ namespace UserConfigMigration
         }
 
         /// <summary>
+        /// Represents user configuration file information.
+        /// </summary>
+        public class UserConfigInfo
+        {
+            /// <summary>
+            /// The path to the user configuration file.
+            /// </summary>
+            public string UserConfigPath { get; } = null;
+
+            /// <summary>
+            /// The version of the user configuration file.
+            /// </summary>
+            public Version UserConfigVersion { get; } = null;
+
+            /// <summary>
+            /// Make a new user configuration information instance.
+            /// </summary>
+            /// <param name="user_config_path">The path to the user configuration file.</param>
+            /// <param name="user_config_version">The version of the user configuration file.</param>
+            /// <exception cref="ArgumentException"></exception>
+            /// <exception cref="ArgumentNullException"></exception>
+            public UserConfigInfo(string user_config_path, Version user_config_version)
+            {
+                ValidatePath(user_config_path, nameof(user_config_path));
+                if (!user_config_path.EndsWith(
+                    Path.Combine("", USER_CONFIG_FILENAME), StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ArgumentException($"'{user_config_path}' must end with '{USER_CONFIG_FILENAME}'");
+                }
+                if (user_config_version == null)
+                {
+                    throw new ArgumentNullException(nameof(user_config_version));
+                }
+                UserConfigPath = user_config_path;
+                UserConfigVersion = user_config_version ?? throw new ArgumentNullException(nameof(user_config_version));
+            }
+        }
+
+        /// <summary>
         /// Find the latest user configuration file stored in local application settings.
         /// </summary>
         /// <param name="current_app_version">The current application version.</param>
