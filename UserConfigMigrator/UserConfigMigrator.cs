@@ -80,8 +80,8 @@ namespace UserConfigMigration
 
         private static string GetAssemblyName(string assembly_dir_name)
         {
-            // Indicator of assembly directory name is ".exe_Url_" in the middle of the assembly name.
-            const string indicator = ".exe_Url_";
+            // Indicator of assembly directory name is "_Url_" in the middle of the assembly name.
+            const string indicator = "_Url_";
             int indicator_start_index = assembly_dir_name.LastIndexOf(indicator, StringComparison.OrdinalIgnoreCase);
             if (indicator_start_index < 0)
             {
