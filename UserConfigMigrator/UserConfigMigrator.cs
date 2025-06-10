@@ -424,66 +424,70 @@ namespace UserConfigMigration
 
             /*
              * Priority order for user configuration file search:
-             * 1. Current app info, if assembly directory name is defined
-             * 2. If debugging and no assembly directory name, current app info with debug assembly name extension
-             * 3. If debugging, previous app infos with debug assembly name extension
-             * 4. If no assembly directory name, current app info with .exe assembly name extension
-             * 5. Previous app infos with .exe assembly name extension
+             * 1. If assembly directory name is defined, current app info with assembly directory name.
+             * 2. If debugging, current and previous app infos with legacy debug assembly name extension.
+             * 3. Current app info with empty assembly name extension (shall work for any .NET version).
              */
             bool assembly_dir_is_defined = !string.IsNullOrWhiteSpace(current_app_info.AssemblyDirName);
             bool debugging = System.Diagnostics.Debugger.IsAttached;
 
-            user_config_path = null;
+            UserConfigInfo user_config_info = null;
             if (assembly_dir_is_defined)
             {
-                user_config_path = FindLatestUserConfigFile(
+                user_config_info = FindLatestUserConfigFile(
                     app_data_dir,
-                    new List<AppInfo>() { current_app_info },
+                    new List<AppInfo> { current_app_info },
                     current_app_version,
                     accept_higher_app_versions);
             }
-            if (debugging)
+            if ((user_config_info == null) && debugging)
             {
-                if ((user_config_path == null) && !assembly_dir_is_defined)
+                List<AppInfo> app_infos = new List<AppInfo>
                 {
-                    user_config_path = FindLatestUserConfigFile(
-                        app_data_dir,
-                        new List<AppInfo>() { ConvertToAssemblyNameWithExtension(current_app_info, debugging: true) },
-                        current_app_version,
-                        accept_higher_app_versions);
-                }
-                if ((user_config_path == null) && (previous_app_infos != null))
+                    ConvertToAssemblyNameWithExtension(current_app_info, ASSEMBLY_NAME_LEGACY_DEBUG_EXE_EXTENSION),
+                    ConvertToAssemblyNameWithExtension(current_app_info, ASSEMBLY_NAME_LEGACY_DEBUG_DLL_EXTENSION),
+                };
+                if (previous_app_infos != null)
                 {
-                    user_config_path = FindLatestUserConfigFile(
-                        app_data_dir,
-                        previous_app_infos
-                            .Where(x => x != null)
-                            .Select(x => ConvertToAssemblyNameWithExtension(x, debugging: true))
-                            .ToList(),
-                        current_app_version,
-                        accept_higher_app_versions);
-                }
-            }
-            if ((user_config_path == null) && !assembly_dir_is_defined)
-            {
-                user_config_path = FindLatestUserConfigFile(
-                    app_data_dir,
-                    new List<AppInfo>() { ConvertToAssemblyNameWithExtension(current_app_info, debugging: false) },
-                    current_app_version,
-                    accept_higher_app_versions);    
-            }
-            if ((user_config_path == null) && (previous_app_infos != null))
-            {
-                user_config_path = FindLatestUserConfigFile(
-                    app_data_dir,
-                    previous_app_infos
+                    app_infos.AddRange(previous_app_infos
                         .Where(x => x != null)
-                        .Select(x => ConvertToAssemblyNameWithExtension(x, debugging: false))
-                        .ToList(),
+                        .Select(x => ConvertToAssemblyNameWithExtension(x, ASSEMBLY_NAME_LEGACY_DEBUG_EXE_EXTENSION)));
+                    app_infos.AddRange(previous_app_infos
+                        .Where(x => x != null)
+                        .Select(x => ConvertToAssemblyNameWithExtension(x, ASSEMBLY_NAME_LEGACY_DEBUG_DLL_EXTENSION)));
+                }
+                user_config_info = FindLatestUserConfigFile(
+                    app_data_dir,
+                    app_infos,
                     current_app_version,
                     accept_higher_app_versions);
             }
-            return (user_config_path != null);
+            if (user_config_info == null)
+            {
+                List<AppInfo> app_infos = new List<AppInfo>
+                {
+                    ConvertToAssemblyNameWithExtension(current_app_info, ASSEMBLY_NAME_EMPTY_EXTENSION)
+                };
+                if (previous_app_infos != null)
+                {
+                    app_infos.AddRange(previous_app_infos
+                        .Where(x => x != null)
+                        .Select(x => ConvertToAssemblyNameWithExtension(x, ASSEMBLY_NAME_EMPTY_EXTENSION)));
+                }
+                user_config_info = FindLatestUserConfigFile(
+                    app_data_dir,
+                    app_infos,
+                    current_app_version,
+                    accept_higher_app_versions);
+            }
+
+            if (user_config_info == null)
+            {
+                user_config_path = null;
+                return false;
+            }
+            user_config_path = user_config_info.UserConfigPath;
+            return true;
         }
 
         /// <summary>
