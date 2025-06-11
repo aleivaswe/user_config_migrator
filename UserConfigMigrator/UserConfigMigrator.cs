@@ -428,6 +428,11 @@ namespace UserConfigMigration
              * 1. If assembly directory name is defined, current app info with assembly directory name.
              * 2. If debugging, current and previous app infos with legacy debug assembly name extension.
              * 3. Current app info with empty assembly name extension (shall work for any .NET version).
+             * 
+             * If a stand-alone application is moved and executed from a different directory,
+             * the user configuration file might also be moved to a new location.
+             * To ensure that the user configuration file is found after moving a stand-alone application,
+             * repeat steps 2 and 3 and allow for the same application version.
              */
             bool assembly_dir_is_defined = !string.IsNullOrWhiteSpace(current_app_info.AssemblyDirName);
             bool debugging = System.Diagnostics.Debugger.IsAttached;
@@ -439,47 +444,65 @@ namespace UserConfigMigration
                     app_data_dir,
                     new List<AppInfo> { current_app_info },
                     current_app_version,
-                    accept_higher_app_versions);
+                    accept_higher_app_versions,
+                    accept_same_app_version: false);
             }
-            if ((user_config_info == null) && debugging)
+
+            if (user_config_info == null)
             {
-                List<AppInfo> app_infos = new List<AppInfo>
+                List<AppInfo> app_infos_debugging = new List<AppInfo>
                 {
                     ConvertToAssemblyNameWithExtension(current_app_info, ASSEMBLY_NAME_LEGACY_DEBUG_EXE_EXTENSION),
                     ConvertToAssemblyNameWithExtension(current_app_info, ASSEMBLY_NAME_LEGACY_DEBUG_DLL_EXTENSION),
                 };
                 if (previous_app_infos != null)
                 {
-                    app_infos.AddRange(previous_app_infos
+                    app_infos_debugging.AddRange(previous_app_infos
                         .Where(x => x != null)
                         .Select(x => ConvertToAssemblyNameWithExtension(x, ASSEMBLY_NAME_LEGACY_DEBUG_EXE_EXTENSION)));
-                    app_infos.AddRange(previous_app_infos
+                    app_infos_debugging.AddRange(previous_app_infos
                         .Where(x => x != null)
                         .Select(x => ConvertToAssemblyNameWithExtension(x, ASSEMBLY_NAME_LEGACY_DEBUG_DLL_EXTENSION)));
                 }
-                user_config_info = FindLatestUserConfigFile(
-                    app_data_dir,
-                    app_infos,
-                    current_app_version,
-                    accept_higher_app_versions);
-            }
-            if (user_config_info == null)
-            {
-                List<AppInfo> app_infos = new List<AppInfo>
-                {
+
+                List<AppInfo> app_infos_assembly_name = new List<AppInfo>
+                                    {
                     ConvertToAssemblyNameWithExtension(current_app_info, ASSEMBLY_NAME_EMPTY_EXTENSION)
                 };
                 if (previous_app_infos != null)
                 {
-                    app_infos.AddRange(previous_app_infos
+                    app_infos_assembly_name.AddRange(previous_app_infos
                         .Where(x => x != null)
                         .Select(x => ConvertToAssemblyNameWithExtension(x, ASSEMBLY_NAME_EMPTY_EXTENSION)));
                 }
-                user_config_info = FindLatestUserConfigFile(
-                    app_data_dir,
-                    app_infos,
-                    current_app_version,
-                    accept_higher_app_versions);
+
+                bool accept_same_app_version = false;
+                for (int i = 0; i < 2; i++)
+                {
+                    if ((user_config_info == null) && debugging)
+                    {
+                        user_config_info = FindLatestUserConfigFile(
+                            app_data_dir,
+                            app_infos_debugging,
+                            current_app_version,
+                            accept_higher_app_versions,
+                            accept_same_app_version);
+                    }
+                    if (user_config_info == null)
+                    {
+                        user_config_info = FindLatestUserConfigFile(
+                            app_data_dir,
+                            app_infos_assembly_name,
+                            current_app_version,
+                            accept_higher_app_versions,
+                            accept_same_app_version);
+                    }
+                    if (user_config_info != null)
+                    {
+                        break;
+                    }
+                    accept_same_app_version = true;
+                }
             }
 
             if (user_config_info == null)
