@@ -131,7 +131,8 @@ namespace UserConfigMigration
             string app_data_dir,
             List<AppInfo> app_infos,
             Version current_app_version,
-            bool accept_higher_app_versions)
+            bool accept_higher_app_versions,
+            bool accept_same_app_version)
         {
             Version latest_user_config_version = null;
             string latest_user_config_path = null;
@@ -170,7 +171,7 @@ namespace UserConfigMigration
                         {
                             continue;
                         }
-                        if (version == current_app_version)
+                        if (!accept_same_app_version && (version == current_app_version))
                         {
                             continue;
                         }
