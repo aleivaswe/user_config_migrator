@@ -465,11 +465,8 @@ namespace UserConfigMigration
              * To ensure that the user configuration file is found after moving a stand-alone application,
              * repeat steps 2 and 3 and allow for the same application version.
              */
-            bool assembly_dir_is_defined = !string.IsNullOrWhiteSpace(current_app_info.AssemblyDirName);
-            bool debugging = System.Diagnostics.Debugger.IsAttached;
-
             UserConfigInfo user_config_info = null;
-            if (assembly_dir_is_defined)
+            if (current_app_info.AssemblyDirNameIsDefined)
             {
                 user_config_info = FindLatestUserConfigFile(
                     app_data_dir,
@@ -481,36 +478,37 @@ namespace UserConfigMigration
 
             if (user_config_info == null)
             {
-                List<AppInfo> app_infos_debugging = new List<AppInfo>
-                {
-                    ConvertToAssemblyNameWithExtension(current_app_info, ASSEMBLY_NAME_LEGACY_DEBUG_EXE_EXTENSION),
-                    ConvertToAssemblyNameWithExtension(current_app_info, ASSEMBLY_NAME_LEGACY_DEBUG_DLL_EXTENSION),
-                };
+                List<AppInfo> app_infos_debugging = ASSEMBLY_NAME_LEGACY_DEBUG_EXTENSIONS
+                    .Select(ext => ConvertToAssemblyNameWithExtension(current_app_info, ext)).ToList();
+
                 if (previous_app_infos != null)
                 {
-                    app_infos_debugging.AddRange(previous_app_infos
-                        .Where(x => x != null)
-                        .Select(x => ConvertToAssemblyNameWithExtension(x, ASSEMBLY_NAME_LEGACY_DEBUG_EXE_EXTENSION)));
-                    app_infos_debugging.AddRange(previous_app_infos
-                        .Where(x => x != null)
-                        .Select(x => ConvertToAssemblyNameWithExtension(x, ASSEMBLY_NAME_LEGACY_DEBUG_DLL_EXTENSION)));
+                    foreach (AppInfo previous_app_info in previous_app_infos)
+                    {
+                        if (previous_app_info == null)
+                        {
+                            continue;
+                        }
+                        app_infos_debugging.AddRange(ASSEMBLY_NAME_LEGACY_DEBUG_EXTENSIONS
+                            .Select(ext => ConvertToAssemblyNameWithExtension(previous_app_info, ext)));
+                    }
                 }
 
                 List<AppInfo> app_infos_assembly_name = new List<AppInfo>
-                                    {
-                    ConvertToAssemblyNameWithExtension(current_app_info, ASSEMBLY_NAME_EMPTY_EXTENSION)
+                {
+                    ConvertToAssemblyNameWithExtension(current_app_info, assembly_extension: string.Empty)
                 };
                 if (previous_app_infos != null)
                 {
                     app_infos_assembly_name.AddRange(previous_app_infos
                         .Where(x => x != null)
-                        .Select(x => ConvertToAssemblyNameWithExtension(x, ASSEMBLY_NAME_EMPTY_EXTENSION)));
+                        .Select(x => ConvertToAssemblyNameWithExtension(x, assembly_extension: string.Empty)));
                 }
 
                 bool accept_same_app_version = false;
                 for (int i = 0; i < 2; i++)
                 {
-                    if ((user_config_info == null) && debugging)
+                    if ((user_config_info == null) && DEBUGGING)
                     {
                         user_config_info = FindLatestUserConfigFile(
                             app_data_dir,
