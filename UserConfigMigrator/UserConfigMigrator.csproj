@@ -7,9 +7,9 @@
     <Product>UserConfigMigrator</Product>
     <Description>Helper for migrating user-scoped .NET application settings across versions.</Description>
     <Copyright>Copyright ©  2025</Copyright>
-    <Version>1.4.2.0</Version>
-    <AssemblyVersion>1.4.2.0</AssemblyVersion>
-    <FileVersion>1.4.2.0</FileVersion>
+    <Version>1.4.3.0</Version>
+    <AssemblyVersion>1.4.3.0</AssemblyVersion>
+    <FileVersion>1.4.3.0</FileVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <Authors>Aleksander Ivanovski</Authors>
     <PackageId>UserConfigMigrator</PackageId>
