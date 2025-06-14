@@ -140,15 +140,15 @@ namespace UserConfigMigration
             return assembly_name;
         }
 
-        private static AppInfo ConvertToAssemblyNameWithExtension(AppInfo app_info, string extension)
+        private static AppInfo ConvertToAssemblyNameWithExtension(AppInfo app_info, string assembly_extension)
         {
             if (app_info == null)
             {
                 return null;
             }
 
-            string assembly_name = GetAssemblyName(app_info.AssemblyName);
-            Filename assembly_name_with_extension = new Filename(assembly_name + extension);
+            string assembly_name = GetAssemblyName(app_info.AssemblyName, must_contain_hash_separator: false);
+            Filename assembly_name_with_extension = new Filename(assembly_name + assembly_extension);
 
             if (app_info.Company != null)
             {
