@@ -287,6 +287,11 @@ namespace UserConfigMigration
             internal string AssemblyDirName { get; } = null;
 
             /// <summary>
+            /// Indicates if assembly directory name is defined.
+            /// </summary>
+            internal bool AssemblyDirNameIsDefined { get { return !string.IsNullOrWhiteSpace(AssemblyDirName); } }
+
+            /// <summary>
             /// The root settings directory name (either <see cref="Company"/> or <see cref="RootNamespace"/>).
             /// </summary>
             internal string RootSettingsDirName
@@ -342,26 +347,19 @@ namespace UserConfigMigration
             /// Create a new application information instance.
             /// </summary>
             /// <param name="company">The application company.</param>
-            /// <param name="assembly_name">The application assembly name.</param>
             /// <param name="assembly_dir_name">The application assembly directory name.</param>
             /// <exception cref="ArgumentNullException"></exception>
-            internal AppInfo(Filename company, Filename assembly_name, Filename assembly_dir_name)
+            internal AppInfo(Filename company, string assembly_dir_name)
             {
                 if (company == null)
                 {
                     throw new ArgumentNullException(nameof(company));
                 }
-                if (assembly_name == null)
-                {
-                    throw new ArgumentNullException(nameof(assembly_name));
-                }
-                if (assembly_dir_name == null)
-                {
-                    throw new ArgumentNullException(nameof(assembly_dir_name));
-                }
+                ValidateFilename(assembly_dir_name, nameof(assembly_dir_name));
+
                 Company = company.Value;
-                AssemblyName = assembly_name.Value;
-                AssemblyDirName = assembly_dir_name.Value;
+                AssemblyDirName = assembly_dir_name;
+                AssemblyName = GetAssemblyName(assembly_dir_name, must_contain_hash_separator: true);
             }
         }
 
@@ -378,13 +376,11 @@ namespace UserConfigMigration
             FileInfo user_config_path = GetCurrentUserConfigPath(user_level_config);
             Filename root_settings_dir_name = new Filename(GetUserConfigRootSettingsDir(user_config_path).Name);
             Filename assembly_dir_name = new Filename(GetUserConfigAssemblyDir(user_config_path).Name);
-            Filename assembly_name = new Filename(GetAssemblyName(assembly_dir_name.Value));
             current_app_version = GetUserConfigVersion(user_config_path);
 
             return new AppInfo(
                 company: root_settings_dir_name,
-                assembly_name: assembly_name,
-                assembly_dir_name: assembly_dir_name);
+                assembly_dir_name: assembly_dir_name.Value);
         }
 
         /// <summary>
