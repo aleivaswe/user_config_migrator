@@ -84,27 +84,60 @@ namespace UserConfigMigration
             return root_settings_dir.Parent;
         }
 
-        private static string GetAssemblyName(string assembly_dir_name)
+        private static string GetAssemblyName(string assembly_dir_name, bool must_contain_hash_separator)
         {
-            // Indicator of assembly directory name is "_Url_" in the middle of the assembly name.
-            const string indicator = "_Url_";
-            int indicator_start_index = assembly_dir_name.LastIndexOf(indicator, StringComparison.OrdinalIgnoreCase);
-            if (indicator_start_index == 0)
+            ValidateFilename(assembly_dir_name, nameof(assembly_dir_name));
+
+            int separator_start_index = assembly_dir_name
+                .LastIndexOf(ASSEMBLY_NAME_HASH_SEPARATOR, StringComparison.OrdinalIgnoreCase);
+
+            if ((separator_start_index < 0) && must_contain_hash_separator)
+            {
+                throw new InvalidOperationException(
+                    $"'{assembly_dir_name}' assembly directory name must contain '{ASSEMBLY_NAME_HASH_SEPARATOR}' separator");
+            }
+            else if (separator_start_index == 0)
             {
                 throw new InvalidOperationException(
                     $"'{assembly_dir_name}' assembly name must be at least one character long");
             }
-            else if ((indicator_start_index + indicator.Length) >= assembly_dir_name.Length)
+            else if ((separator_start_index + ASSEMBLY_NAME_HASH_SEPARATOR.Length) >= assembly_dir_name.Length)
             {
                 throw new InvalidOperationException(
                     $"'{assembly_dir_name}' assembly hash must be at least one character long");
             }
 
-            string assembly_name = (indicator_start_index < 0)
+            string assembly_name = (separator_start_index < 0)
                 ? assembly_dir_name
-                : assembly_dir_name.Substring(0, indicator_start_index);
+                : assembly_dir_name.Substring(0, separator_start_index);
 
-            return Path.GetFileNameWithoutExtension(assembly_name);
+            bool has_legacy_debug_extension = false;
+            if (DEBUGGING)
+            {
+                foreach (string legacy_debug_extension in ASSEMBLY_NAME_LEGACY_DEBUG_EXTENSIONS)
+                {
+                    if (assembly_name.EndsWith(legacy_debug_extension, StringComparison.OrdinalIgnoreCase))
+                    {
+                        assembly_name = assembly_name.Substring(0, assembly_name.Length - legacy_debug_extension.Length);
+                        has_legacy_debug_extension = true;
+                        break;
+                    }
+                }
+            }
+            if (!has_legacy_debug_extension)
+            {
+                foreach (string legacy_extension in ASSEMBLY_NAME_LEGACY_EXTENSIONS)
+                {
+                    if (assembly_name.EndsWith(legacy_extension, StringComparison.OrdinalIgnoreCase))
+                    {
+                        assembly_name = assembly_name.Substring(0, assembly_name.Length - legacy_extension.Length);
+                        break;
+                    }
+                }
+            }
+
+            ValidateFilename(assembly_name, nameof(assembly_name));
+            return assembly_name;
         }
 
         private static AppInfo ConvertToAssemblyNameWithExtension(AppInfo app_info, string extension)
