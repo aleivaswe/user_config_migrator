@@ -14,9 +14,11 @@ namespace UserConfigMigration
     {
         private const string USER_CONFIG_FILENAME = "user.config";
 
-        private const string ASSEMBLY_NAME_EMPTY_EXTENSION = "";
-        private const string ASSEMBLY_NAME_LEGACY_DEBUG_EXE_EXTENSION = ".vshost.exe";
-        private const string ASSEMBLY_NAME_LEGACY_DEBUG_DLL_EXTENSION = ".vshost.dll";
+        private const string ASSEMBLY_NAME_HASH_SEPARATOR = "_Url_";
+        private static readonly string[] ASSEMBLY_NAME_LEGACY_EXTENSIONS = { ".exe", ".dll" };
+        private static readonly string[] ASSEMBLY_NAME_LEGACY_DEBUG_EXTENSIONS = { ".vshost.exe, .vshost.dll" };
+
+        private static readonly bool DEBUGGING = System.Diagnostics.Debugger.IsAttached;
 
         private static void ValidateFilename(string filename, string param_name)
         {
