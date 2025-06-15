@@ -181,7 +181,7 @@ namespace UserConfigMigration
                 }
 
                 string assembly_name = app_info.AssemblyName;
-                if (!string.IsNullOrWhiteSpace(app_info.AssemblyDirName))
+                if (app_info.AssemblyDirNameIsDefined)
                 {
                     assembly_name = app_info.AssemblyDirName;
                 }
