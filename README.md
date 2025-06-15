@@ -20,7 +20,7 @@ Useful when:
 - Application **company**, **root namespace** or **assembly name** has changed.
 - Supports downgrades by allowing import of settings from future versions.
 
-> ⚠️ **Scope:** This is a minimal utility tailored for internal use in .NET Framework (e.g., 4.8) desktop applications that store settings using `SettingsBase` and `user.config`.  
+> ⚠️ **Scope:** This is a minimal utility tailored for internal use in .NET desktop applications that store settings using `SettingsBase` and `user.config`.  
 It does **not** support roaming profiles, custom configuration files, or non-standard config structures.
 
 ## Features
