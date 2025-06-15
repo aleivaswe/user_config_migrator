@@ -399,13 +399,19 @@ namespace UserConfigMigration
             public Version UserConfigVersion { get; } = null;
 
             /// <summary>
+            /// The creation time of the user configuration file.
+            /// </summary>
+            public DateTime UserConfigCreationTime { get; } = DateTime.MinValue;
+
+            /// <summary>
             /// Make a new user configuration information instance.
             /// </summary>
             /// <param name="user_config_path">The path to the user configuration file.</param>
             /// <param name="user_config_version">The version of the user configuration file.</param>
+            /// <param name="creation_time">The creation time of the user configuration file.</param>
             /// <exception cref="ArgumentException"></exception>
             /// <exception cref="ArgumentNullException"></exception>
-            public UserConfigInfo(string user_config_path, Version user_config_version)
+            internal UserConfigInfo(string user_config_path, Version user_config_version, DateTime creation_time)
             {
                 ValidatePath(user_config_path, nameof(user_config_path));
                 if (!user_config_path.EndsWith(
@@ -418,7 +424,8 @@ namespace UserConfigMigration
                     throw new ArgumentNullException(nameof(user_config_version));
                 }
                 UserConfigPath = user_config_path;
-                UserConfigVersion = user_config_version ?? throw new ArgumentNullException(nameof(user_config_version));
+                UserConfigVersion = user_config_version;
+                UserConfigCreationTime = creation_time;
             }
         }
 
