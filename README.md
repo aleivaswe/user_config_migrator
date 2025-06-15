@@ -16,6 +16,7 @@ A helper utility for migrating user-scoped application settings between differen
 
 Useful when:
 - Application version upgrades should reuse settings from older versions.
+- Stand-alone application should reuse most recent settings when being moved to another execution directory.
 - Application **company**, **root namespace** or **assembly name** has changed.
 - Supports downgrades by allowing import of settings from future versions.
 
