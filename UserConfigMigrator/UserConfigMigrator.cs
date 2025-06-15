@@ -174,8 +174,8 @@ namespace UserConfigMigration
             DateTime latest_user_config_creation_time = DateTime.MinValue;
             foreach (AppInfo app_info in app_infos)
             {
-                string root_settings_path = Path.Combine(app_data_dir, app_info.RootSettingsDirName);
-                if (!Directory.Exists(root_settings_path))
+                string root_settings_dir = Path.Combine(app_data_dir, app_info.RootSettingsDirName);
+                if (!Directory.Exists(root_settings_dir))
                 {
                     continue;
                 }
@@ -186,23 +186,23 @@ namespace UserConfigMigration
                     assembly_name = app_info.AssemblyDirName;
                 }
 
-                foreach (string sub_folder in Directory.GetDirectories(root_settings_path))
+                foreach (string assembly_dir in Directory.GetDirectories(root_settings_dir))
                 {
-                    string folder_name = Path.GetFileName(sub_folder);
-                    if (!folder_name.StartsWith(assembly_name, StringComparison.OrdinalIgnoreCase))
+                    string assembly_dir_name = Path.GetFileName(assembly_dir);
+                    if (!assembly_dir_name.StartsWith(assembly_name, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
 
-                    foreach (string version_folder in Directory.GetDirectories(sub_folder))
+                    foreach (string version_dir in Directory.GetDirectories(assembly_dir))
                     {
-                        string user_config_file = Path.Combine(version_folder, USER_CONFIG_FILENAME);
-                        if (!File.Exists(user_config_file))
+                        string user_config_file_path = Path.Combine(version_dir, USER_CONFIG_FILENAME);
+                        if (!File.Exists(user_config_file_path))
                         {
                             continue;
                         }
 
-                        string version_raw = Path.GetFileName(version_folder);
+                        string version_raw = Path.GetFileName(version_dir);
                         if (!Version.TryParse(version_raw, out Version version))
                         {
                             continue;
@@ -216,18 +216,18 @@ namespace UserConfigMigration
                             continue;
                         }
 
-                        DateTime creation_time = File.GetCreationTime(user_config_file);
+                        DateTime creation_time = File.GetCreationTime(user_config_file_path);
                         if (version > latest_user_config_version)
                         {
                             latest_user_config_version = version;
-                            latest_user_config_path = user_config_file;
+                            latest_user_config_path = user_config_file_path;
                             latest_user_config_creation_time = creation_time;
                         }
                         else if (version == latest_user_config_version)
                         {
                             if (creation_time > latest_user_config_creation_time)
                             {
-                                latest_user_config_path = user_config_file;
+                                latest_user_config_path = user_config_file_path;
                                 latest_user_config_creation_time = creation_time;
                             }
                         }
