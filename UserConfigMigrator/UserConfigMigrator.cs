@@ -169,8 +169,9 @@ namespace UserConfigMigration
             bool accept_higher_app_versions,
             bool accept_same_app_version)
         {
-            Version latest_user_config_version = null;
             string latest_user_config_path = null;
+            Version latest_user_config_version = new Version(0, 0, 0, 0);
+            DateTime latest_user_config_creation_time = DateTime.MinValue;
             foreach (AppInfo app_info in app_infos)
             {
                 string root_settings_path = Path.Combine(app_data_dir, app_info.RootSettingsDirName);
@@ -214,10 +215,21 @@ namespace UserConfigMigration
                         {
                             continue;
                         }
-                        if ((latest_user_config_version == null) || (version > latest_user_config_version))
+
+                        DateTime creation_time = File.GetCreationTime(user_config_file);
+                        if (version > latest_user_config_version)
                         {
                             latest_user_config_version = version;
                             latest_user_config_path = user_config_file;
+                            latest_user_config_creation_time = creation_time;
+                        }
+                        else if (version == latest_user_config_version)
+                        {
+                            if (creation_time > latest_user_config_creation_time)
+                            {
+                                latest_user_config_path = user_config_file;
+                                latest_user_config_creation_time = creation_time;
+                            }
                         }
                     }
                 }
@@ -226,7 +238,8 @@ namespace UserConfigMigration
             {
                 return null;
             }
-            return new UserConfigInfo(latest_user_config_path, latest_user_config_version);
+            return new UserConfigInfo(
+                latest_user_config_path, latest_user_config_version, latest_user_config_creation_time);
         }
 
         private static void DebugLog(string line)
